@@ -7,6 +7,10 @@ class FeatureData(BaseModel):
     range: List[float]  # 范围数组
     probability: List[float]  # 概率数组
 
+    class Config:
+        extra = "allow"
+        arbitrary_types_allowed = True
+
 
 class BayesianModelGrade(BaseModel):  # 关键：继承BaseModel
     """

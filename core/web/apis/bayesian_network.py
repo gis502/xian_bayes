@@ -42,8 +42,8 @@ def change(data: BayesianModelGrade):
     for key in data_dict['data']:
         # 重置config
         if key in bayesianNetworkModel.config['disaster']:
-            bayesianNetworkModel.config['disaster'][key]['range'] = data_dict['model'][key]['range']
-            bayesianNetworkModel.config['disaster'][key]['probability'] = data_dict['model'][key]['probability']
+            bayesianNetworkModel.config['disaster'][key]['range'] = data_dict['data'][key]['range']
+            bayesianNetworkModel.config['disaster'][key]['probability'] = data_dict['data'][key]['probability']
 
     # 重新训练模型
     retrain_event.set()
