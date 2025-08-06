@@ -23,7 +23,7 @@ def grade():
     for key in bayesianNetworkModel.config['disaster']['hazards']:
         result[key] = {
             'range': {
-                'modifiable': (key != 'rock_property'),
+                'modifiable': (key != 'rockType'),
                 'value': bayesianNetworkModel.config['disaster'][key]['range']
             },
             'probability': {
