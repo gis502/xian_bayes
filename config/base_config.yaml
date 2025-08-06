@@ -1,0 +1,112 @@
+# 阈值
+disaster:
+  # 致灾因子
+  hazards: ['elevation', 'slope', 'waterDistance', 'vegetationCoverage',
+            'rainfall', 'duration', 'rockType']
+
+  # 次生灾害
+  secondary: ['landslide', 'debris_flow', 'torrential_flood', 'water_logging', 'barrier_lake']
+
+  # 高程
+  elevation:
+    range: [400, 700]
+    label: ['低', '中', '高']
+    # probability: [0.3, 0.3, 0.4]   # 先验概率的值，可以自行设置
+
+  # 坡度
+  slope:
+    range: [5, 25]
+    label: ['缓', '中', '陡']
+
+  # 距河道距离
+  waterDistance:
+    range: [1500, 3000]
+    label: ['近', '中', '远']
+
+  # 植被覆盖率
+  vegetationCoverage:
+    range: [30, 70]
+    label: ['低', '中', '高']
+
+  # 降雨量
+  rainfall:
+    range: [5, 15]
+    label: ['低', '中', '高']
+
+  # 持续时间
+  duration:
+    range: [6, 24]
+    label: ['短', '中', '长']
+
+  # 岩体性质
+  rockType:
+    range: [0, 1, 2, 3, 4]
+    label: ['花岗岩', '黄土-古土壤', '黄土-砂岩互层', '片麻岩', '砂岩', '页岩']
+
+  # 滑坡
+  landslide:
+    label: ['不发生', '发生']
+    discreteValue: [0, 1]   # 离散值
+    hazards: ['slope', 'rockType', 'vegetationCoverage', 'rainfall']
+    result: '发生'  # 预测结果关注字段
+
+  # 泥石流
+  debris_flow:
+    label: ['不发生', '发生']
+    discreteValue: [0, 1]
+    hazards: ['slope', 'rockType', 'vegetationCoverage', 'rainfall']
+    result: '发生'
+
+  # 山洪
+  torrential_flood:
+    label: ['不发生', '发生']
+    discreteValue: [0, 1]
+    hazards: ['slope', 'rainfall', 'duration', 'waterDistance', 'barrier_lake']
+    result: '发生'
+
+  # 内涝
+  water_logging:
+    label: ['不发生', '发生']
+    discreteValue: [0, 1]
+    hazards: ['elevation', 'duration', 'slope', 'rainfall', 'vegetationCoverage']
+    result: '发生'
+
+  # 堰塞湖
+  barrier_lake:
+    label: ['不发生', '发生']
+    discreteValue: [0, 1]
+    hazards: ['landslide', 'debris_flow']
+    result: '发生'
+
+# 贝叶斯节点结构
+bayes:
+  nodes:
+    # 致灾因子 → 滑坡
+    - ['slope', 'landslide']
+    - ['rockType', 'landslide']
+    - ['vegetationCoverage', 'landslide']
+    - ['rainfall', 'landslide']
+
+    # 致灾因子 → 泥石流
+    - ['slope', 'debris_flow']
+    - ['rockType', 'debris_flow']
+    - ['vegetationCoverage', 'debris_flow']
+    - ['rainfall', 'debris_flow']
+
+    # 致灾因子+堰塞湖 → 山洪
+    - ['slope', 'torrential_flood']
+    - ['rainfall', 'torrential_flood']
+    - ['duration', 'torrential_flood']
+    - ['waterDistance', 'torrential_flood']
+    - ['barrier_lake', 'torrential_flood']
+
+    # 致灾因子 → 内涝
+    - ['elevation', 'water_logging']
+    - ['duration', 'water_logging']
+    - ['slope', 'water_logging']
+    - ['rainfall', 'water_logging']
+    - ['vegetationCoverage', 'water_logging']
+
+    # 滑坡+泥石流 → 堰塞湖
+    - ['landslide', 'barrier_lake']
+    - ['debris_flow', 'barrier_lake']
