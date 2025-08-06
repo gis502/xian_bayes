@@ -11,6 +11,8 @@ from pgmpy.models import DiscreteBayesianNetwork
 from utils.file.file_utils import FileUtils
 from collections import defaultdict
 
+from utils.math.MathUtils import MathUtils
+
 
 class BayesianNetworkModel:
     _instance = None
@@ -33,7 +35,8 @@ class BayesianNetworkModel:
         """
         try:
             # 读取CSV文件
-            df = pd.read_csv(FileUtils.path_convert(os.path.join(FileUtils.get_project_root_path(), 'data/xi_an_disaster_data.csv')))
+            df = pd.read_csv(
+                FileUtils.path_convert(os.path.join(FileUtils.get_project_root_path(), 'data/xi_an_disaster_data.csv')))
             # 数据离散化处理
             discrete_df = self.discretize_continuous_variables(df)
             return discrete_df
@@ -55,7 +58,7 @@ class BayesianNetworkModel:
         for key in self.config['disaster']['hazards']:
             data[key] = pd.cut(
                 data[key],
-                bins=[-np.inf] + self.config['disaster'][key]['range'] + [np.inf],
+                bins=[-np.inf] + MathUtils.convert_to_numbers(self.config['disaster'][key]['range']) + [np.inf],
                 labels=self.config['disaster'][key]['label']
             )
 
@@ -108,7 +111,8 @@ class BayesianNetworkModel:
         # 如果有自定义先验概率，直接使用
         if custom_priors_flag:
             # 按states顺序返回概率
-            return np.array([self.config['disaster'][var_name]['probability']]).reshape(-1, 1)
+            return np.array([MathUtils.convert_to_numbers(self.config['disaster'][var_name]['probability'])]).reshape(
+                -1, 1)
 
         # 否则使用拉普拉斯平滑
         counts = defaultdict(int)
