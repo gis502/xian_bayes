@@ -44,25 +44,27 @@ class BayesianNetworkModel:
             print(f"数据处理错误: {str(e)}")
             return None
 
-    def discretize_continuous_variables(self, df, dealingWithDisasters=True):
+    def discretize_continuous_variables(self, df, dealing_with_disasters=True):
         """
         将连续变量离散化
 
         :param df: 读取的历史数据
-        :param dealingWithDisasters: 是否离散化处理灾害数据
+        :param dealing_with_disasters: 是否离散化处理灾害数据
         :return: 处理后的离散数据
         """
         data = df.copy()
 
         # 处理致灾因子
         for key in self.config['disaster']['hazards']:
+            # 将字符串转为数字
+            data[key] = pd.to_numeric(data[key], errors="coerce")
             data[key] = pd.cut(
                 data[key],
                 bins=[-np.inf] + MathUtils.convert_to_numbers(self.config['disaster'][key]['range']) + [np.inf],
                 labels=self.config['disaster'][key]['label']
             )
 
-        if dealingWithDisasters:
+        if dealing_with_disasters:
             # 处理次生灾害
             for key in self.config['disaster']['secondary']:
                 # 获取当前灾害类型的标签列表（如 ['不发生', '发生']）
