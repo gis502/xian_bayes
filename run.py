@@ -1,9 +1,23 @@
 import os.path
 import sys
 import subprocess
+import platform
+
 from pathlib import Path
 
 from utils.file.file_utils import FileUtils
+
+REQUIRED_VERSION = (3, 10)  # 指定所需的最低版本
+
+
+def check_python_version():
+    """检查Python版本是否符合要求"""
+    current_version = sys.version_info[:2]  # 获取主次版本 (3, 8)
+
+    if current_version < REQUIRED_VERSION:
+        print(f"\n⚠️ 当前Python版本: {platform.python_version()}")
+        print(f"⚠️ 项目需要Python {'.'.join(map(str, REQUIRED_VERSION))} 或更高版本")
+        sys.exit(1)  # 退出程序
 
 
 def ensure_virtualenv(venv_name=".venv"):
@@ -59,6 +73,9 @@ def install_dependencies(venv_python, requirements="requirements.txt"):
 
 
 def main():
+    # 检查python版本是否符合要求
+    check_python_version()
+
     # 确保虚拟环境存在
     venv_path = ensure_virtualenv()
     venv_python = get_venv_python(venv_path)
