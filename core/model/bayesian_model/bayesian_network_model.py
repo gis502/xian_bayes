@@ -123,9 +123,23 @@ class BayesianNetworkModel:
 
         # 应用拉普拉斯平滑（+1）
         total = len(data) + len(states)
-        probabilities = [(counts[state] + 1) / total for state in states]
+        raw_probabilities = [(counts[state] + 1) / total for state in states]
 
-        return np.array(probabilities).reshape(-1, 1)
+        # 保留3位小数
+        rounded_probs = [round(p, 3) for p in raw_probabilities]
+
+        # 计算误差，确保总和为1.0
+        sum_rounded = sum(rounded_probs)
+        error = 1.0 - sum_rounded
+
+        # 如果有误差，调整最大的概率值来补偿
+        if abs(error) > 1e-9:  # 考虑浮点精度问题
+            max_index = rounded_probs.index(max(rounded_probs))
+            rounded_probs[max_index] += error
+            # 再次四舍五入确保仍然是3位小数
+            rounded_probs[max_index] = round(rounded_probs[max_index], 3)
+
+        return np.array(rounded_probs).reshape(-1, 1)
 
     def calculate_conditional_probabilities(self, data, child_var, parent_vars):
         """
