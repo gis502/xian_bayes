@@ -1,8 +1,8 @@
 class MathUtils:
     @staticmethod
-    def convert_to_numbers(arr):
+    def convert_to_numbers(arr, index=None):
         """
-        将数组中元素转为数字
+        将列表中元素转为数字
         """
         result = []
         for element in arr:
@@ -29,4 +29,6 @@ class MathUtils:
                 except (ValueError, TypeError):
                     # 无法转换则保留原始值
                     result.append(element)
+        if index is not None:
+            return result[index]
         return result

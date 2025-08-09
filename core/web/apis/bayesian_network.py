@@ -1,8 +1,11 @@
+import math
+
 from core.model.bayesian_model.start import retrain_event, bayesianNetworkModel, model
 from fastapi import APIRouter
 
 from core.web.domain.BayesianModelGrade import BayesianModelGrade
 from core.web.domain.BayesianModelPrediction import BayesianModelPrediction, model_to_dataframe
+from utils.math.MathUtils import MathUtils
 
 # 创建路由器实例
 router = APIRouter()
@@ -49,6 +52,27 @@ def change(data: BayesianModelGrade):
     retrain_event.set()
 
 
+def change_torrential_flood_probability(data_dict, idx):
+    """
+    修改内涝概率
+    """
+    # 获取降雨量的值
+    for factor in data_dict['data'][idx]['factors']:
+        if factor['attributeNameAlias'] == 'rainfall':
+            rainfall = MathUtils.convert_to_numbers([factor['factorValue']], 0)
+
+    probability = round((1 / (1 + math.pow(math.e, -0.05 * (rainfall - 36)))) * 100, 2)
+
+    # 修改概率
+    level = '高'
+    if probability < 30:
+        level = '低'
+    elif probability < 70:
+        level = '中'
+    data_dict['data'][idx]['probability'].append(probability)
+    data_dict['data'][idx]['level'].append(level)
+
+
 @router.post("/model/bayes/prediction")
 def prediction(data: BayesianModelPrediction):
     data_dict = data.dict()
@@ -69,7 +93,7 @@ def prediction(data: BayesianModelPrediction):
         # 遍历结果，添加预测
         for key in result:
             data_dict['data'][idx]['disaster'].append(key)
-            probability = result[key][bayesianNetworkModel.config['disaster'][key]['result']]
+            probability = round(result[key][bayesianNetworkModel.config['disaster'][key]['result']], 2)
             level = '高'
             if probability < 30:
                 level = '低'
@@ -77,5 +101,9 @@ def prediction(data: BayesianModelPrediction):
                 level = '中'
             data_dict['data'][idx]['probability'].append(probability)
             data_dict['data'][idx]['level'].append(level)
+
+            # 修改内涝概率
+            if key == 'water_logging':
+                change_torrential_flood_probability(data_dict, idx)
 
     return data_dict['data']
