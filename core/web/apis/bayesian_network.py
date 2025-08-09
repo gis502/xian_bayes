@@ -1,4 +1,5 @@
 import math
+import numpy as np
 
 from core.model.bayesian_model.start import retrain_event, bayesianNetworkModel, model
 from fastapi import APIRouter
@@ -52,16 +53,65 @@ def change(data: BayesianModelGrade):
     retrain_event.set()
 
 
+def optimized_flood_prob(H, R, H_threshold=10, R_threshold=36):
+    """
+    优化后的内涝概率函数（确保低值区域概率接近0）
+    :param H: 高差(米)
+    :param R: 降雨量(毫米)
+    :param H_threshold: 高差阈值(默认10m)
+    :param R_threshold: 降雨阈值(默认36mm)
+    :return: 内涝概率(0-100%)
+    """
+    # 1. 计算相对阈值距离（保留负值）
+    delta_H = H - H_threshold
+    delta_R = R - R_threshold
+
+    # 2. 优化后的平滑过渡函数
+    def smooth_transition(x, scale=0.5):
+        """改进的S型过渡函数：在负值区域衰减更快"""
+        # 在负值区域使用更陡峭的衰减曲线
+        if x < 0:
+            return 1 / (1 + np.exp(-scale * x * 2))  # 负值区域衰减加倍
+        else:
+            return 1 / (1 + np.exp(-scale * x))
+
+    # 3. 计算独立影响因子（使用不同的缩放因子）
+    H_effect = smooth_transition(delta_H, scale=0.4)  # 高差影响
+    R_effect = smooth_transition(delta_R, scale=0.3)  # 降雨影响
+
+    # 4. 重新设计复合影响因子
+    # 当两个因素都低于阈值时，显著降低影响
+    if delta_H < 0 and delta_R < 0:
+        # 双低区域：使用乘法效应（加速衰减）
+        base_effect = H_effect * R_effect - 1.0
+    else:
+        # 其他区域：保持协同效应
+        base_effect = 0.6 * (H_effect + R_effect) + 0.4 * (H_effect * R_effect) - 0.5
+
+    # 5. 优化概率映射函数
+    # 使用S型曲线确保在低值区域快速衰减
+    probability = 100 / (1 + np.exp(-3 * base_effect))
+
+    # 6. 边界约束和低值截断
+    if probability < 1e-5:  # 极小概率直接归零
+        return 0.0
+    return max(0, min(100, probability))
+
+
 def change_torrential_flood_probability(data_dict, idx):
     """
     修改内涝概率
     """
     # 获取降雨量的值
+    rainfall = 0
+    heightDifference = 0
     for factor in data_dict['data'][idx]['factors']:
         if factor['attributeNameAlias'] == 'rainfall':
             rainfall = MathUtils.convert_to_numbers([factor['factorValue']], 0)
+        if factor['attributeNameAlias'] == 'heightDifference':
+            heightDifference = MathUtils.convert_to_numbers([factor['factorValue']], 0)
 
-    probability = round((1 / (1 + math.pow(math.e, -0.05 * (rainfall - 36)))) * 100, 2)
+    probability = round(optimized_flood_prob(heightDifference, rainfall), 2)
 
     # 修改概率
     level = '高'
