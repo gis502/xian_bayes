@@ -138,7 +138,8 @@ def prediction(data: BayesianModelPrediction):
         evidence = {}
         for key in bayesianNetworkModel.config['disaster']['hazards']:
             evidence[key] = row[key]
-        result = bayesianNetworkModel.predict_disaster(model, evidence, [data_dict['data'][idx]['disasterType']])
+        result = bayesianNetworkModel.predict_disaster(model, evidence, [
+            bayesianNetworkModel.config['disaster']['secondary_en_zh'][data_dict['data'][idx]['disasterType']]])
 
         # 遍历结果，添加预测
         for key in result:

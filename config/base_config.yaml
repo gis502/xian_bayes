@@ -7,6 +7,20 @@ disaster:
   # 次生灾害
   secondary: ['landslide', 'debris_flow', 'torrential_flood', 'water_logging', 'barrier_lake']
 
+  # 次生灾害中英文对应关系
+  secondary_en_zh: {
+    '滑坡': 'landslide',
+    '泥石流': 'debris_flow',
+    '山洪': 'torrential_flood',
+    '洪水': 'torrential_flood',
+    '内涝': 'water_logging',
+    '堰塞湖': 'barrier_lake',
+    'landslide': 'landslide',
+    'debris_flow': 'debris_flow',
+    'torrential_flood': 'torrential_flood',
+    'water_logging': 'water_logging',
+  }
+
   # 高程
   elevation:
     range: [400, 700]
