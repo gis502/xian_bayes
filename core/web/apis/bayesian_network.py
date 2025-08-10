@@ -119,8 +119,8 @@ def change_torrential_flood_probability(data_dict, idx):
         level = '低'
     elif probability < 70:
         level = '中'
-    data_dict['data'][idx]['probability'] = probability
-    data_dict['data'][idx]['level'] = level
+    data_dict['data'][idx]['probability'] = [probability]
+    data_dict['data'][idx]['level'] = [level]
 
 
 @router.post("/model/bayes/prediction")
@@ -150,8 +150,8 @@ def prediction(data: BayesianModelPrediction):
                 level = '低'
             elif probability < 70:
                 level = '中'
-            data_dict['data'][idx]['probability'] = probability
-            data_dict['data'][idx]['level'] = level
+            data_dict['data'][idx]['probability'] = [probability]
+            data_dict['data'][idx]['level'] = [level]
 
             # 修改内涝概率
             if key == 'water_logging':
