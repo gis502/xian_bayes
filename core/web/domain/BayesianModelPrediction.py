@@ -22,6 +22,7 @@ class EntityItem(BaseModel):
     probability: List[Any]
     level: List[Any]
     disaster: List[Any]
+    disasterType: str
     factors: List[RequiredFieldDict]
 
     class Config:
