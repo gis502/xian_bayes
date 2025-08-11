@@ -53,13 +53,13 @@ def change(data: BayesianModelGrade):
     retrain_event.set()
 
 
-def optimized_flood_prob(H, R, H_threshold=10, R_threshold=36):
+def optimized_flood_prob(H, R, H_threshold=10, R_threshold=50):
     """
     优化后的内涝概率函数（确保低值区域概率接近0）
     :param H: 高差(米)
     :param R: 降雨量(毫米)
     :param H_threshold: 高差阈值(默认10m)
-    :param R_threshold: 降雨阈值(默认36mm)
+    :param R_threshold: 降雨阈值(默认50mm)
     :return: 内涝概率(0-100%)
     """
     # 1. 计算相对阈值距离（保留负值）
@@ -115,7 +115,7 @@ def change_torrential_flood_probability(data_dict, idx):
 
     # 修改概率
     level = '高'
-    if probability < 30:
+    if probability <= 50:
         level = '低'
     elif probability < 70:
         level = '中'
@@ -130,6 +130,7 @@ def prediction(data: BayesianModelPrediction):
     # 对数据类型进行转换
     data_convert = model_to_dataframe(data_dict)
 
+
     # 对数据进行离散处理
     discrete_data = bayesianNetworkModel.discretize_continuous_variables(data_convert, False)
 
@@ -141,12 +142,19 @@ def prediction(data: BayesianModelPrediction):
         result = bayesianNetworkModel.predict_disaster(model, evidence, [
             bayesianNetworkModel.config['disaster']['secondary_en_zh'][data_dict['data'][idx]['disasterType']]])
 
+#         print(row)
+#         print()
+
+#         print(f'证据{evidence}')
+#         print(f'预测结果{result}')
+
         # 遍历结果，添加预测
         for key in result:
             data_dict['data'][idx]['disaster'].append(key)
             probability = round(result[key][bayesianNetworkModel.config['disaster'][key]['result']], 2)
+            print()
             level = '高'
-            if probability < 30:
+            if probability <= 50:
                 level = '低'
             elif probability < 70:
                 level = '中'

@@ -45,12 +45,14 @@ def model_to_dataframe(prediction_data) -> pd.DataFrame:
     # 构建数据字典：{attributeNameAlias: factorValue, ...}
 
     datas = []
-    data_dict = {}
 
     for list_item in prediction_data['data']:
+        data_dict = {}
+#         print(list_item)
         for item in list_item['factors']:
             data_dict[item['attributeNameAlias']] = item['factorValue']
         datas.append(data_dict)
+
 
     # 转换为DataFrame（一行数据，列名为attributeNameAlias）
     # 注意：pd.DataFrame需要传入列表形式的字典以保证结构正确

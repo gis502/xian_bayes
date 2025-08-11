@@ -36,7 +36,7 @@ class BayesianNetworkModel:
         try:
             # 读取CSV文件
             df = pd.read_csv(
-                FileUtils.path_convert(os.path.join(FileUtils.get_project_root_path(), 'data/xi_an_disaster_data.csv')))
+                FileUtils.path_convert(os.path.join(FileUtils.get_project_root_path(), 'data/xi_an_disaster_data - 副本 (4).csv')))
             # 数据离散化处理
             discrete_df = self.discretize_continuous_variables(df)
             return discrete_df
@@ -189,6 +189,7 @@ class BayesianNetworkModel:
 
         # 定义网络结构（节点之间关系)
         model = DiscreteBayesianNetwork(self.config['bayes']['nodes'])
+
 
         # 定义根节点及其先验概率(致灾因子)
         root_vars = self.config['disaster']['hazards']

@@ -25,12 +25,13 @@ disaster:
   elevation:
     range: [400, 700]
     label: ['低', '中', '高']
-    # probability: [0.3, 0.3, 0.4]   # 先验概率的值，可以自行设置
+#    probability: [0.3, 0.3, 0.4]   # 先验概率的值，可以自行设置
 
   # 坡度
   slope:
-    range: [5, 25]
-    label: ['缓', '中', '陡']
+    range: [ 5, 25, 45, 65 ]
+    label: ['极缓', '缓', '中', '陡', '极陡']
+#    probability: [0.001, 0.2, 0.6, 0.1, 0.099]
 
   # 距河道距离
   waterDistance:
@@ -39,23 +40,28 @@ disaster:
 
   # 植被覆盖率
   vegetationCoverage:
-    range: [30, 70]
-    label: ['低', '中', '高']
+    range: [10, 30, 60, 80]
+    label: ['极低', '低', '中',  '高', '极高']
+#    probability: [0.001, 0.2, 0.6, 0.1, 0.099]
 
   # 降雨量
   rainfall:
-    range: [5, 15]
-    label: ['低', '中', '高']
+    range: [5, 15, 30, 70, 140]
+    label: ['小雨', '中雨', '大雨', '暴雨', '大暴雨', '特大暴雨']
+#    probability: [0.001, 0.05, 0.6, 0.3, 0.04, 0.009]
+    probability: [0.002, 0.01, 0.08, 0.25, 0.35, 0.308]
 
   # 持续时间
   duration:
-    range: [6, 24]
-    label: ['短', '中', '长']
+    range: [6, 24, 72]
+    label: ['短', '中', '长', '超长']
+#    probability: [0.5,0.2,0.15,0.15]
 
   # 岩体性质
   rockType:
     range: [0, 1, 2, 3, 4]
     label: ['花岗岩', '黄土-古土壤', '黄土-砂岩互层', '片麻岩', '砂岩', '页岩']
+#    probability: [0.001, 0.35, 0.35, 0.001, 0.001, 0.297]
 
   # 滑坡
   landslide:
