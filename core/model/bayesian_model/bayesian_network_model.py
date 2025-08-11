@@ -143,27 +143,53 @@ class BayesianNetworkModel:
 
     def calculate_conditional_probabilities(self, data, child_var, parent_vars):
         """
-        计算条件概率 P(child | parents)，使用拉普拉斯平滑
-
-        :param data: 读取的数据
-        :param child_var: 子变量
-        :param parent_vars: 父变量
-        :return:
+        计算条件概率
         """
-        # 获取所有状态
-        child_states = self.get_variable_states(child_var)
+        child_states = self.get_variable_states(child_var)  # 如 ['不发生', '发生']
         parent_states_list = [self.get_variable_states(p) for p in parent_vars]
-
-        # 计算父节点所有可能的组合
         parent_combinations = list(itertools.product(*parent_states_list))
 
-        # 初始化计数（拉普拉斯平滑初始值为1）
+        # 初始化计数
         counts = defaultdict(lambda: defaultdict(int))
         for combo in parent_combinations:
-            for child_state in child_states:
-                counts[combo][child_state] = 1  # 平滑初始值
+            # 判断该组合是否在训练集中完全缺失
+            is_missing = True
+            for _, row in data.iterrows():
+                current_parent_vals = tuple(row[p] for p in parent_vars)
+                if current_parent_vals == combo:
+                    is_missing = False
+                    break
 
-        # 统计数据中的出现次数
+            if is_missing:
+                # 检查是否所有父节点都定义了risk_weight
+                all_have_risk_weight = True
+                for parent_var in parent_vars:
+                    if 'risk_weight' not in self.config['disaster'][parent_var]:
+                        all_have_risk_weight = False
+                        break
+
+                if all_have_risk_weight:
+                    # 所有父节点都有风险权重：按风险计算初始计数
+                    total_risk = 0.0
+                    for i, parent_var in enumerate(parent_vars):
+                        parent_state = combo[i]
+                        state_index = self.config['disaster'][parent_var]['label'].index(parent_state)
+                        total_risk += self.config['disaster'][parent_var]['risk_weight'][state_index]
+
+                    normalized_risk = total_risk / len(parent_vars)
+                    k = 5
+                    counts[combo][child_states[1]] = 1 + normalized_risk * k  # 发生的计数
+                    counts[combo][child_states[0]] = 1 + (1 - normalized_risk) * k  # 不发生的计数
+                else:
+                    # 存在未定义risk_weight的父节点：使用基础拉普拉斯平滑
+                    for child_state in child_states:
+                        counts[combo][child_state] = 1
+            else:
+                # 对非缺失组合：仍用基础拉普拉斯平滑（初始1）
+                for child_state in child_states:
+                    counts[combo][child_state] = 1
+
+        # 正常统计训练集中的出现次数（覆盖非缺失组合的初始值）
         for _, row in data.iterrows():
             parent_vals = tuple(row[p] for p in parent_vars)
             child_val = row[child_var]
@@ -175,8 +201,7 @@ class BayesianNetworkModel:
             total = sum(counts[combo].values())
             combo_probs = [counts[combo][state] / total for state in child_states]
             cpt.append(combo_probs)
-
-        # 转置以匹配TabularCPD的格式（子节点状态数, 父节点组合数）
+        print(cpt)
         return np.array(cpt).T
 
     def build_bayesian_network(self, data):
@@ -197,10 +222,11 @@ class BayesianNetworkModel:
         # 先验概率
         cpds = []
 
+        print('正在设置先验概率......')
         for var in root_vars:
             probs = self.calculate_prior_probabilities(data, var)
 
-            # 修改config中的条件概率
+            # 修改config中的先验概率
             self.config['disaster'][var]['probability'] = [item[0] for item in probs]
 
             cpd = TabularCPD(
@@ -210,9 +236,12 @@ class BayesianNetworkModel:
                 state_names={var: self.get_variable_states(var)}
             )
             cpds.append(cpd)
+        print('先验概率设置完成。')
 
         # 设置条件概率表
+        print('正在设置条件概率表，此过程大概需要5-10分钟，请耐心等待......')
         for secondary in self.config['disaster']['secondary']:
+            print(f'正在设置条件概率表{secondary}......')
             # 设置状态名称
             state_names = {
                 secondary: self.get_variable_states(secondary),
@@ -230,6 +259,7 @@ class BayesianNetworkModel:
                 evidence_card=[len(self.get_variable_states(v)) for v in self.config['disaster'][secondary]['hazards']],
                 state_names=state_names
             ))
+            print(f'条件概率表{secondary}设置完成。')
 
         # 添加所有CPT到模型
         model.add_cpds(*cpds)
