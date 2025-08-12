@@ -36,7 +36,7 @@ class BayesianNetworkModel:
         try:
             # 读取CSV文件
             df = pd.read_csv(
-                FileUtils.path_convert(os.path.join(FileUtils.get_project_root_path(), 'data/xi_an_disaster_data - 副本 (4).csv')))
+                FileUtils.path_convert(os.path.join(FileUtils.get_project_root_path(), 'data/xi_an_disaster_data.csv')))
             # 数据离散化处理
             discrete_df = self.discretize_continuous_variables(df)
             return discrete_df
@@ -145,62 +145,72 @@ class BayesianNetworkModel:
         """
         计算条件概率
         """
-        child_states = self.get_variable_states(child_var)  # 如 ['不发生', '发生']
+        # 获取状态列表
+        child_states = self.get_variable_states(child_var)
         parent_states_list = [self.get_variable_states(p) for p in parent_vars]
         parent_combinations = list(itertools.product(*parent_states_list))
 
-        # 初始化计数
-        counts = defaultdict(lambda: defaultdict(int))
+        # 预计算父节点状态到风险权重的映射（加速后续查询）
+        parent_risk_maps = {}
+        for parent_var in parent_vars:
+            if 'risk_weight' in self.config['disaster'][parent_var]:
+                labels = self.config['disaster'][parent_var]['label']
+                weights = self.config['disaster'][parent_var]['risk_weight']
+                parent_risk_maps[parent_var] = {label: weight for label, weight in zip(labels, weights)}
+
+        # 一次遍历获取所有存在的父组合（替代多次遍历检查）
+        if parent_vars:
+            # 生成父变量组合的元组列表
+            parent_combos_in_data = data[parent_vars].apply(tuple, axis=1)
+            existing_combos = set(parent_combos_in_data)
+
+            # 用groupby高效统计实际出现次数（替代iterrows累加）
+            grouped = data.groupby(parent_vars, observed=True)[child_var].value_counts().unstack(fill_value=0)
+        else:
+            # 处理无父节点的特殊情况
+            existing_combos = {tuple()}
+            grouped = data[child_var].value_counts().to_frame().T
+            grouped.index = [tuple()]  # 用空元组作为索引
+
+        # 转换为字典便于快速查询
+        grouped_dict = {}
+        for idx, row in grouped.iterrows():
+            combo = idx if isinstance(idx, tuple) else (idx,)
+            grouped_dict[combo] = {state: row.get(state, 0) for state in child_states}
+
+        # 计算计数（合并初始化和统计步骤）
+        counts = {}
         for combo in parent_combinations:
-            # 判断该组合是否在训练集中完全缺失
-            is_missing = True
-            for _, row in data.iterrows():
-                current_parent_vals = tuple(row[p] for p in parent_vars)
-                if current_parent_vals == combo:
-                    is_missing = False
-                    break
+            if combo not in existing_combos:
+                # 处理缺失的组合
+                all_have_risk = all(p in parent_risk_maps for p in parent_vars)
 
-            if is_missing:
-                # 检查是否所有父节点都定义了risk_weight
-                all_have_risk_weight = True
-                for parent_var in parent_vars:
-                    if 'risk_weight' not in self.config['disaster'][parent_var]:
-                        all_have_risk_weight = False
-                        break
-
-                if all_have_risk_weight:
-                    # 所有父节点都有风险权重：按风险计算初始计数
+                if all_have_risk and parent_vars:  # 确保有父节点时才计算风险
                     total_risk = 0.0
                     for i, parent_var in enumerate(parent_vars):
-                        parent_state = combo[i]
-                        state_index = self.config['disaster'][parent_var]['label'].index(parent_state)
-                        total_risk += self.config['disaster'][parent_var]['risk_weight'][state_index]
+                        total_risk += parent_risk_maps[parent_var][combo[i]]
 
                     normalized_risk = total_risk / len(parent_vars)
                     k = 5
-                    counts[combo][child_states[1]] = 1 + normalized_risk * k  # 发生的计数
-                    counts[combo][child_states[0]] = 1 + (1 - normalized_risk) * k  # 不发生的计数
+                    counts[combo] = {
+                        child_states[1]: 1 + normalized_risk * k,
+                        child_states[0]: 1 + (1 - normalized_risk) * k
+                    }
                 else:
-                    # 存在未定义risk_weight的父节点：使用基础拉普拉斯平滑
-                    for child_state in child_states:
-                        counts[combo][child_state] = 1
+                    # 基础拉普拉斯平滑
+                    counts[combo] = {state: 1 for state in child_states}
             else:
-                # 对非缺失组合：仍用基础拉普拉斯平滑（初始1）
-                for child_state in child_states:
-                    counts[combo][child_state] = 1
+                # 存在的组合：拉普拉斯平滑 + 实际计数
+                counts[combo] = {
+                    state: 1 + grouped_dict.get(combo, {}).get(state, 0)
+                    for state in child_states
+                }
 
-        # 正常统计训练集中的出现次数（覆盖非缺失组合的初始值）
-        for _, row in data.iterrows():
-            parent_vals = tuple(row[p] for p in parent_vars)
-            child_val = row[child_var]
-            counts[parent_vals][child_val] += 1
-
-        # 计算概率
+        # 计算最终概率
         cpt = []
         for combo in parent_combinations:
             total = sum(counts[combo].values())
-            combo_probs = [counts[combo][state] / total for state in child_states]
-            cpt.append(combo_probs)
+            cpt.append([counts[combo][state] / total for state in child_states])
         print(cpt)
         return np.array(cpt).T
 
@@ -239,7 +249,7 @@ class BayesianNetworkModel:
         print('先验概率设置完成。')
 
         # 设置条件概率表
-        print('正在设置条件概率表，此过程大概需要5-10分钟，请耐心等待......')
+        print('正在设置条件概率表，......')
         for secondary in self.config['disaster']['secondary']:
             print(f'正在设置条件概率表{secondary}......')
             # 设置状态名称

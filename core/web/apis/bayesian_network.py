@@ -1,4 +1,3 @@
-import math
 import numpy as np
 
 from core.model.bayesian_model.start import retrain_event, bayesianNetworkModel, model
@@ -98,6 +97,20 @@ def optimized_flood_prob(H, R, H_threshold=10, R_threshold=50):
     return max(0, min(100, probability))
 
 
+def set_level(probability):
+    """
+    设置等级
+    """
+    # 修改概率
+    level = '高'
+    if probability < 30:
+        level = '极低'
+    if probability < 50:
+        level = '低'
+    elif probability < 70:
+        level = '中'
+    return level
+
 def change_torrential_flood_probability(data_dict, idx):
     """
     修改内涝概率
@@ -113,12 +126,7 @@ def change_torrential_flood_probability(data_dict, idx):
 
     probability = round(optimized_flood_prob(heightDifference, rainfall), 2)
 
-    # 修改概率
-    level = '高'
-    if probability <= 50:
-        level = '低'
-    elif probability < 70:
-        level = '中'
+    level = set_level(probability)
     data_dict['data'][idx]['probability'] = [probability]
     data_dict['data'][idx]['level'] = [level]
 
@@ -129,7 +137,6 @@ def prediction(data: BayesianModelPrediction):
 
     # 对数据类型进行转换
     data_convert = model_to_dataframe(data_dict)
-
 
     # 对数据进行离散处理
     discrete_data = bayesianNetworkModel.discretize_continuous_variables(data_convert, False)
@@ -142,22 +149,11 @@ def prediction(data: BayesianModelPrediction):
         result = bayesianNetworkModel.predict_disaster(model, evidence, [
             bayesianNetworkModel.config['disaster']['secondary_en_zh'][data_dict['data'][idx]['disasterType']]])
 
-#         print(row)
-#         print()
-
-#         print(f'证据{evidence}')
-#         print(f'预测结果{result}')
-
         # 遍历结果，添加预测
         for key in result:
             data_dict['data'][idx]['disaster'].append(key)
             probability = round(result[key][bayesianNetworkModel.config['disaster'][key]['result']], 2)
-            print()
-            level = '高'
-            if probability <= 50:
-                level = '低'
-            elif probability < 70:
-                level = '中'
+            level = set_level(probability)
             data_dict['data'][idx]['probability'] = [probability]
             data_dict['data'][idx]['level'] = [level]
 

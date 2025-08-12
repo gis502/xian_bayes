@@ -26,6 +26,7 @@ disaster:
     range: [400, 700]
     label: ['低', '中', '高']
 #    probability: [0.3, 0.3, 0.4]   # 先验概率的值，可以自行设置
+    risk_weight: [0.1, 0.3, 0.5]
 
   # 坡度
   slope:
@@ -38,6 +39,7 @@ disaster:
   waterDistance:
     range: [1500, 3000]
     label: ['近', '中', '远']
+    risk_weight: [2, 0.8, 0.3]
 
   # 植被覆盖率
   vegetationCoverage:
@@ -58,6 +60,7 @@ disaster:
     range: [6, 24, 72]
     label: ['短', '中', '长', '超长']
 #    probability: [0.5,0.2,0.15,0.15]
+    risk_weight: [0.1, 0.3, 2, 5]
 
   # 岩体性质
   rockType:
@@ -72,6 +75,7 @@ disaster:
     discreteValue: [0, 1]   # 离散值
     hazards: ['slope', 'rockType', 'vegetationCoverage', 'rainfall']
     result: '发生'  # 预测结果关注字段
+    risk_weight: [0.3, 0.7]
 
   # 泥石流
   debris_flow:
@@ -79,6 +83,7 @@ disaster:
     discreteValue: [0, 1]
     hazards: ['slope', 'rockType', 'vegetationCoverage', 'rainfall']
     result: '发生'
+    risk_weight: [0.3, 0.7]
 
   # 山洪
   torrential_flood:
@@ -86,6 +91,7 @@ disaster:
     discreteValue: [0, 1]
     hazards: ['slope', 'rainfall', 'duration', 'waterDistance', 'barrier_lake']
     result: '发生'
+    risk_weight: [0.3, 0.7]
 
   # 内涝
   water_logging:
@@ -93,6 +99,7 @@ disaster:
     discreteValue: [0, 1]
     hazards: ['elevation', 'duration', 'slope', 'rainfall', 'vegetationCoverage']
     result: '发生'
+    risk_weight: [0.3, 0.7]
 
   # 堰塞湖
   barrier_lake:
@@ -100,6 +107,7 @@ disaster:
     discreteValue: [0, 1]
     hazards: ['landslide', 'debris_flow']
     result: '发生'
+    risk_weight: [0.3, 0.7]
 
 # 贝叶斯节点结构
 bayes:
