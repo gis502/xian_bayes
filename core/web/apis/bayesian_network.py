@@ -105,7 +105,7 @@ def set_level(probability):
     level = '高'
     if probability < 30:
         level = '极低'
-    if probability < 50:
+    elif probability < 50:
         level = '低'
     elif probability < 70:
         level = '中'
