@@ -211,7 +211,6 @@ class BayesianNetworkModel:
         for combo in parent_combinations:
             total = sum(counts[combo].values())
             cpt.append([counts[combo][state] / total for state in child_states])
-        print(cpt)
         return np.array(cpt).T
 
     def build_bayesian_network(self, data):

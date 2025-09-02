@@ -3,6 +3,7 @@ import numpy as np
 from core.model.bayesian_model.start import retrain_event, bayesianNetworkModel, model
 from fastapi import APIRouter
 
+from core.model.logic_model.logic_model import LogicModel
 from core.web.domain.BayesianModelGrade import BayesianModelGrade
 from core.web.domain.BayesianModelPrediction import BayesianModelPrediction, model_to_dataframe
 from utils.math.MathUtils import MathUtils
@@ -111,6 +112,7 @@ def set_level(probability):
         level = '中'
     return level
 
+
 def change_torrential_flood_probability(data_dict, idx):
     """
     修改内涝概率
@@ -136,29 +138,47 @@ def prediction(data: BayesianModelPrediction):
     data_dict = data.dict()
 
     # 对数据类型进行转换
-    data_convert = model_to_dataframe(data_dict)
+    # data_convert = model_to_dataframe(data_dict)
 
     # 对数据进行离散处理
-    discrete_data = bayesianNetworkModel.discretize_continuous_variables(data_convert, False)
+    # discrete_data = bayesianNetworkModel.discretize_continuous_variables(data_convert, False)
 
     # 遍历数据设置概率
-    for idx, row in discrete_data.iterrows():
-        evidence = {}
-        for key in bayesianNetworkModel.config['disaster']['hazards']:
-            evidence[key] = row[key]
-        result = bayesianNetworkModel.predict_disaster(model, evidence, [
-            bayesianNetworkModel.config['disaster']['secondary_en_zh'][data_dict['data'][idx]['disasterType']]])
+    # for idx, row in discrete_data.iterrows():
+    # 贝叶斯模型预测，暂时不使用
+    # evidence = {}
+    # for key in bayesianNetworkModel.config['disaster']['hazards']:
+    #     evidence[key] = row[key]
+    # result = bayesianNetworkModel.predict_disaster(model, evidence, [
+    #     bayesianNetworkModel.config['disaster']['secondary_en_zh'][data_dict['data'][idx]['disasterType']]])
+    #
+    # print()
+    # print(result)
+    # print()
+    #
+    # # 遍历结果，添加预测
+    # for key in result:
+    #     data_dict['data'][idx]['disaster'].append(key)
+    #     probability = round(result[key][bayesianNetworkModel.config['disaster'][key]['result']], 2)
+    #     level = set_level(probability)
+    #     data_dict['data'][idx]['probability'] = [probability]
+    #     data_dict['data'][idx]['level'] = [level]
+    #
+    #     # 修改内涝概率
+    #     if key == 'water_logging':
+    #         change_torrential_flood_probability(data_dict, idx)
 
-        # 遍历结果，添加预测
-        for key in result:
-            data_dict['data'][idx]['disaster'].append(key)
-            probability = round(result[key][bayesianNetworkModel.config['disaster'][key]['result']], 2)
-            level = set_level(probability)
-            data_dict['data'][idx]['probability'] = [probability]
-            data_dict['data'][idx]['level'] = [level]
-
-            # 修改内涝概率
-            if key == 'water_logging':
-                change_torrential_flood_probability(data_dict, idx)
+    # 逻辑回归计算概率
+    idx = 0
+    for item in data_dict['data']:
+        # 概率
+        probability = LogicModel.calculate_probability(item)
+        level = set_level(probability)
+        item['probability'] = [probability]
+        item['level'] = [level]
+        # 修改内涝概率
+        if item['disasterType'] == '内涝':
+            change_torrential_flood_probability(data_dict, idx)
+        idx = idx + 1
 
     return data_dict['data']

@@ -1,11 +1,11 @@
 # 阈值
 disaster:
   # 致灾因子
-  hazards: ['elevation', 'slope', 'waterDistance', 'vegetationCoverage',
-            'rainfall', 'duration', 'rockType']
+  hazards: [ 'elevation', 'slope', 'waterDistance', 'vegetationCoverage',
+             'rainfall', 'duration', 'rockType' ]
 
   # 次生灾害
-  secondary: ['landslide', 'debris_flow', 'torrential_flood', 'water_logging', 'barrier_lake']
+  secondary: [ 'landslide', 'debris_flow', 'torrential_flood', 'water_logging', 'barrier_lake' ]
 
   # 次生灾害中英文对应关系
   secondary_en_zh: {
@@ -23,121 +23,159 @@ disaster:
 
   # 高程
   elevation:
-    range: [400, 700]
-    label: ['低', '中', '高']
-#    probability: [0.3, 0.3, 0.4]   # 先验概率的值，可以自行设置
-    risk_weight: [0.1, 0.3, 0.5]
+    range: [ 400, 700 ]
+    label: [ '低', '中', '高' ]
+    #    probability: [0.3, 0.3, 0.4]   # 先验概率的值，可以自行设置
+    risk_weight: [ 0.1, 0.3, 0.5 ]
 
   # 坡度
   slope:
     range: [ 5, 25, 45, 65 ]
-    label: ['极缓', '缓', '中', '陡', '极陡']
-#    probability: [0.001, 0.2, 0.6, 0.1, 0.099]
-    risk_weight: [0.1, 0.3, 0.5, 0.7, 0.9]
+    label: [ '极缓', '缓', '中', '陡', '极陡' ]
+    #    probability: [0.001, 0.2, 0.6, 0.1, 0.099]
+    risk_weight: [ 0.1, 0.3, 0.5, 0.7, 0.9 ]
 
   # 距河道距离
   waterDistance:
-    range: [1500, 3000]
-    label: ['近', '中', '远']
-    risk_weight: [2, 0.8, 0.3]
+    range: [ 1500, 3000 ]
+    label: [ '近', '中', '远' ]
+    risk_weight: [ 2, 0.8, 0.3 ]
 
   # 植被覆盖率
   vegetationCoverage:
-    range: [10, 30, 60, 80]
-    label: ['极低', '低', '中',  '高', '极高']
-#    probability: [0.001, 0.2, 0.6, 0.1, 0.099]
-    risk_weight: [0.8, 0.6, 0.4, 0.2, 0.8]
+    range: [ 10, 30, 60, 80 ]
+    label: [ '极低', '低', '中',  '高', '极高' ]
+    #    probability: [0.001, 0.2, 0.6, 0.1, 0.099]
+    risk_weight: [ 0.8, 0.6, 0.4, 0.2, 0.8 ]
 
   # 降雨量
   rainfall:
-    range: [5, 15, 30, 70, 140]
-    label: ['小雨', '中雨', '大雨', '暴雨', '大暴雨', '特大暴雨']
-#    probability: [0.001, 0.05, 0.6, 0.3, 0.04, 0.009]
-    risk_weight: [0.1, 0.2, 0.4, 0.6, 0.8, 0.95]
+    range: [ 5, 15, 30, 70, 140 ]
+    label: [ '小雨', '中雨', '大雨', '暴雨', '大暴雨', '特大暴雨' ]
+    #    probability: [0.001, 0.05, 0.6, 0.3, 0.04, 0.009]
+    risk_weight: [ 0.1, 0.2, 0.4, 0.6, 0.8, 0.95 ]
 
   # 持续时间
   duration:
-    range: [6, 24, 72]
-    label: ['短', '中', '长', '超长']
-#    probability: [0.5,0.2,0.15,0.15]
-    risk_weight: [0.1, 0.3, 2, 5]
+    range: [ 6, 24, 72 ]
+    label: [ '短', '中', '长', '超长' ]
+    #    probability: [0.5,0.2,0.15,0.15]
+    risk_weight: [ 0.1, 0.3, 2, 5 ]
 
   # 岩体性质
   rockType:
-    range: [0, 1, 2, 3, 4]
-    label: ['花岗岩', '黄土-古土壤', '黄土-砂岩互层', '片麻岩', '砂岩', '页岩']
-#    probability: [0.001, 0.35, 0.35, 0.001, 0.001, 0.297]
-    risk_weight: [0.3, 0.8, 0.7, 0.2, 0.4, 0.5]
+    range: [ 0, 1, 2, 3, 4 ]
+    label: [ '花岗岩', '黄土-古土壤', '黄土-砂岩互层', '片麻岩', '砂岩', '页岩' ]
+    #    probability: [0.001, 0.35, 0.35, 0.001, 0.001, 0.297]
+    risk_weight: [ 0.3, 0.8, 0.7, 0.2, 0.4, 0.5 ]
 
   # 滑坡
   landslide:
-    label: ['不发生', '发生']
-    discreteValue: [0, 1]   # 离散值
-    hazards: ['slope', 'rockType', 'vegetationCoverage', 'rainfall']
+    label: [ '不发生', '发生' ]
+    discreteValue: [ 0, 1 ]   # 离散值
+    hazards: [ 'slope', 'rockType', 'vegetationCoverage', 'rainfall' ]
     result: '发生'  # 预测结果关注字段
-    risk_weight: [0.3, 0.7]
+    risk_weight: [ 0.3, 0.7 ]
 
   # 泥石流
   debris_flow:
-    label: ['不发生', '发生']
-    discreteValue: [0, 1]
-    hazards: ['slope', 'rockType', 'vegetationCoverage', 'rainfall']
+    label: [ '不发生', '发生' ]
+    discreteValue: [ 0, 1 ]
+    hazards: [ 'slope', 'rockType', 'vegetationCoverage', 'rainfall' ]
     result: '发生'
-    risk_weight: [0.3, 0.7]
+    risk_weight: [ 0.3, 0.7 ]
 
   # 山洪
   torrential_flood:
-    label: ['不发生', '发生']
-    discreteValue: [0, 1]
-    hazards: ['slope', 'rainfall', 'duration', 'waterDistance', 'barrier_lake']
+    label: [ '不发生', '发生' ]
+    discreteValue: [ 0, 1 ]
+    hazards: [ 'slope', 'rainfall', 'duration', 'waterDistance', 'barrier_lake' ]
     result: '发生'
-    risk_weight: [0.3, 0.7]
+    risk_weight: [ 0.3, 0.7 ]
 
   # 内涝
   water_logging:
-    label: ['不发生', '发生']
-    discreteValue: [0, 1]
-    hazards: ['elevation', 'duration', 'slope', 'rainfall', 'vegetationCoverage']
+    label: [ '不发生', '发生' ]
+    discreteValue: [ 0, 1 ]
+    hazards: [ 'elevation', 'duration', 'slope', 'rainfall', 'vegetationCoverage' ]
     result: '发生'
-    risk_weight: [0.3, 0.7]
+    risk_weight: [ 0.3, 0.7 ]
 
   # 堰塞湖
   barrier_lake:
-    label: ['不发生', '发生']
-    discreteValue: [0, 1]
-    hazards: ['landslide', 'debris_flow']
+    label: [ '不发生', '发生' ]
+    discreteValue: [ 0, 1 ]
+    hazards: [ 'landslide', 'debris_flow' ]
     result: '发生'
-    risk_weight: [0.3, 0.7]
+    risk_weight: [ 0.3, 0.7 ]
 
 # 贝叶斯节点结构
 bayes:
   nodes:
     # 致灾因子 → 滑坡
-    - ['slope', 'landslide']
-    - ['rockType', 'landslide']
-    - ['vegetationCoverage', 'landslide']
-    - ['rainfall', 'landslide']
+    - [ 'slope', 'landslide' ]
+    - [ 'rockType', 'landslide' ]
+    - [ 'vegetationCoverage', 'landslide' ]
+    - [ 'rainfall', 'landslide' ]
 
     # 致灾因子 → 泥石流
-    - ['slope', 'debris_flow']
-    - ['rockType', 'debris_flow']
-    - ['vegetationCoverage', 'debris_flow']
-    - ['rainfall', 'debris_flow']
+    - [ 'slope', 'debris_flow' ]
+    - [ 'rockType', 'debris_flow' ]
+    - [ 'vegetationCoverage', 'debris_flow' ]
+    - [ 'rainfall', 'debris_flow' ]
 
     # 致灾因子+堰塞湖 → 山洪
-    - ['slope', 'torrential_flood']
-    - ['rainfall', 'torrential_flood']
-    - ['duration', 'torrential_flood']
-    - ['waterDistance', 'torrential_flood']
-    - ['barrier_lake', 'torrential_flood']
+    - [ 'slope', 'torrential_flood' ]
+    - [ 'rainfall', 'torrential_flood' ]
+    - [ 'duration', 'torrential_flood' ]
+    - [ 'waterDistance', 'torrential_flood' ]
+    - [ 'barrier_lake', 'torrential_flood' ]
 
     # 致灾因子 → 内涝
-    - ['elevation', 'water_logging']
-    - ['duration', 'water_logging']
-    - ['slope', 'water_logging']
-    - ['rainfall', 'water_logging']
-    - ['vegetationCoverage', 'water_logging']
+    - [ 'elevation', 'water_logging' ]
+    - [ 'duration', 'water_logging' ]
+    - [ 'slope', 'water_logging' ]
+    - [ 'rainfall', 'water_logging' ]
+    - [ 'vegetationCoverage', 'water_logging' ]
 
     # 滑坡+泥石流 → 堰塞湖
-    - ['landslide', 'barrier_lake']
-    - ['debris_flow', 'barrier_lake']
+    - [ 'landslide', 'barrier_lake' ]
+    - [ 'debris_flow', 'barrier_lake' ]
+
+# 逻辑回归参数
+logic:
+  landslide: {
+    b0: -6,
+    slope: 0.08,
+    rockType: [0, 2.1, 1.8, 0.9, 0.7, 1.5],
+    vegetationCoverage: -0.04,
+    rainfall: 0.05
+  }
+
+  # 泥石流
+  debris_flow: {
+    b0: -8,
+    slope: 0.06,
+    rockType: [0, 2.5, 2.2, 1.2, 1, 1.8],
+    vegetationCoverage: -0.035,
+    rainfall: 0.07,
+    landslide: 2.8
+  }
+
+  # 山洪
+  torrential_flood: {
+    b0: -7.5,
+    slope: 0.05,
+    rainfall: 0.09,
+    vegetationCoverage: -0.03,
+    barrier_lake: 3.5
+  }
+
+  # 内涝
+  water_logging: {
+    b0: 4,
+    elevation: -0.2,
+    slope: -0.04,
+    rainfall: 0.06,
+    vegetationCoverage: -0.025
+  }
