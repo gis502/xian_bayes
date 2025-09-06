@@ -22,7 +22,7 @@ class LogicModel:
                 if attributeName != 'rockType':
                     probabilities = probabilities + constants[attributeName] * float(factory['factorValue'])
                 else:
-                    probabilities = probabilities + constants[attributeName][int(factory['factorValue)'])] * 1
+                    probabilities = probabilities + constants[attributeName][int(factory['factorValue'])] * 1
 
-        probabilities = 1 / (1 + math.exp(-probabilities))
+        probabilities = round(1 / (1 + math.exp(-probabilities)) * 100,2)
         return probabilities
